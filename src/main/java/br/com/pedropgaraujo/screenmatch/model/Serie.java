@@ -1,6 +1,6 @@
 package br.com.pedropgaraujo.screenmatch.model;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
+import br.com.pedropgaraujo.screenmatch.service.ConsultaChatGPT;
 
 import java.util.OptionalDouble;
 
@@ -21,7 +21,7 @@ public class Serie {
         this.genero = Categoria.fromString(dadosSerie.genero().split(",")[0].trim());
         this.atores = dadosSerie.atores();
         this.poster = dadosSerie.poster();
-        this.sinopse = dadosSerie.sinopse();
+        this.sinopse = String.valueOf(ConsultaChatGPT.obterTraducao(dadosSerie.sinopse()));
     }
 
     public String getTitulo() {
