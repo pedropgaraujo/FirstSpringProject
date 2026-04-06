@@ -1,20 +1,19 @@
 package br.com.pedropgaraujo.screenmatch.service;
 
-import com.theokanning.openai.completion.CompletionRequest;
-import com.theokanning.openai.service.OpenAiService;
+import com.google.genai.Client;
+import com.google.genai.types.GenerateContentResponse;
 
 public class ConsultaChatGPT {
-    public static String obterTraducao(String texto) {
-        OpenAiService service = new OpenAiService("cole aqui sua chave da OpenAI");
 
-        CompletionRequest requisicao = CompletionRequest.builder()
-                .model("gpt-3.5-turbo-instruct")
-                .prompt("traduza para o português o texto: " + texto)
-                .maxTokens(1000)
-                .temperature(0.7)
-                .build();
+    public static String obterTraducao(String pergunta) {
+        Client client = Client.builder().apiKey("AIzaSyDzMLoA345rhVWMmQJJaNjH4RrD3VhYXVk").build();
 
-        var resposta = service.createCompletion(requisicao);
-        return resposta.getChoices().get(0).getText();
+        GenerateContentResponse response =
+                client.models.generateContent(
+                        "gemini-3-flash-preview",
+                        "Traduza para língua portuguesa o seguinte trecho da forma mais direta, não pergunte mais nada, apenas faça: "+pergunta,
+                        null);
+
+        return response.text();
     }
 }
