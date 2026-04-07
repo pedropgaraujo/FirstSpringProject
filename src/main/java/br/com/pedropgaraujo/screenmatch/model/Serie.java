@@ -1,18 +1,42 @@
 package br.com.pedropgaraujo.screenmatch.model;
 
 import br.com.pedropgaraujo.screenmatch.service.ConsultaChatGPT;
+import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.OptionalDouble;
 
+@Entity
+@Table(name = "series")
 public class Serie {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true)
     private String titulo;
     private Integer totalTemporadas;
+    @Enumerated(EnumType.STRING)
     private Categoria genero;
     private String atores;
     private Double avaliacao;
     private String sinopse;
     private String poster;
 
+    @OneToMany(mappedBy = "serie")
+    private List<Episodio> episodioList = new ArrayList<>();
+
+    public Serie(){}
+
+    public List<Episodio> getEpisodioList() {
+        return episodioList;
+    }
+
+    public void setEpisodioList(List<Episodio> episodioList) {
+        this.episodioList = episodioList;
+    }
 
     public Serie (DadosSerie dadosSerie){
         this.titulo = dadosSerie.titulo();
@@ -22,6 +46,14 @@ public class Serie {
         this.atores = dadosSerie.atores();
         this.poster = dadosSerie.poster();
         this.sinopse = String.valueOf(ConsultaChatGPT.obterTraducao(dadosSerie.sinopse()));
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getTitulo() {

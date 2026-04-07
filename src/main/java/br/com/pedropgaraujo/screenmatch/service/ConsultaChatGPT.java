@@ -6,7 +6,7 @@ import com.google.genai.types.GenerateContentResponse;
 public class ConsultaChatGPT {
 
     public static String obterTraducao(String pergunta) {
-        Client client = Client.builder().apiKey("AIzaSyDzMLoA345rhVWMmQJJaNjH4RrD3VhYXVk").build();
+        Client client = Client.builder().apiKey(System.getenv("OPENAI_API_KEY")).build();
 
         GenerateContentResponse response =
                 client.models.generateContent(
