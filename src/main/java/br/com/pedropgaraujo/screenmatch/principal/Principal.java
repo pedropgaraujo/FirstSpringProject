@@ -2,6 +2,7 @@ package br.com.pedropgaraujo.screenmatch.principal;
 
 import br.com.pedropgaraujo.screenmatch.model.DadosSerie;
 import br.com.pedropgaraujo.screenmatch.model.DadosTemporada;
+import br.com.pedropgaraujo.screenmatch.model.Episodio;
 import br.com.pedropgaraujo.screenmatch.model.Serie;
 import br.com.pedropgaraujo.screenmatch.repository.SerieRepository;
 import br.com.pedropgaraujo.screenmatch.service.ConsumoAPI;
@@ -21,8 +22,9 @@ public class Principal {
     private final String API_KEY = "&apikey=b09d932f";
 
     private List<DadosSerie> dadosSeries = new ArrayList<>();
-
     private SerieRepository repository;
+
+    private List<Serie> series = new ArrayList<>();
 
     public Principal(SerieRepository repository) {
 
@@ -51,7 +53,7 @@ public class Principal {
                 case 2:
                     buscarEpisodioPorSerie();
                     break;
-                case  3:
+                case 3:
                     listarSeriesBuscadas();
                     break;
                 case 0:
@@ -79,21 +81,43 @@ public class Principal {
         return dados;
     }
 
-    private void buscarEpisodioPorSerie(){
-        DadosSerie dadosSerie = getDadosSerie();
-        List<DadosTemporada> temporadas = new ArrayList<>();
+    private void buscarEpisodioPorSerie() {
+//        DadosSerie dadosSerie = getDadosSerie();
+        listarSeriesBuscadas();
+        System.out.println("Escolha uma série pelo nome: ");
+        var serieName = scan.nextLine();
+        Optional<Serie> serie = series.stream()
+                .filter(s -> s.getTitulo().toLowerCase().contains(serieName.toLowerCase()))
+                .findFirst();
 
-        for (int i = 1; i <= dadosSerie.totalTemporadas(); i++) {
-            var json = consumo.obterDados(ENDERECO + dadosSerie.titulo().replace(" ", "+") + "&season=" + i + API_KEY);
-            DadosTemporada dadosTemporada = conversor.obterDados(json, DadosTemporada.class);
-            temporadas.add(dadosTemporada);
+        if (serie.isPresent()) {
+
+            var serieEncontrada = serie.get();
+            List<DadosTemporada> temporadas = new ArrayList<>();
+
+            for (int i = 1; i <= serieEncontrada.getTotalTemporadas(); i++) {
+                var json = consumo.obterDados(ENDERECO + serieEncontrada.getTitulo().replace(" ", "+") + "&season=" + i + API_KEY);
+                DadosTemporada dadosTemporada = conversor.obterDados(json, DadosTemporada.class);
+                temporadas.add(dadosTemporada);
+            }
+            temporadas.forEach(System.out::println);
+
+            List<Episodio> episodios = temporadas.stream()
+                    .flatMap(d -> d.episodios().stream()
+                            .map(e -> new Episodio(d.numero(), e)))
+                    .collect(Collectors.toList());
+
+            serieEncontrada.setEpisodioList(episodios);
+            repository.save(serieEncontrada);
+
+        } else {
+            System.out.println("Série não encontrada.");
         }
-        temporadas.forEach(System.out::println);
     }
 
-    private  void listarSeriesBuscadas(){
+    private void listarSeriesBuscadas() {
 
-        List<Serie> series = repository.findAll();
+        series = repository.findAll();
         series.stream()
                 .sorted(Comparator.comparing(Serie::getGenero))
                 .forEach(System.out::println);
