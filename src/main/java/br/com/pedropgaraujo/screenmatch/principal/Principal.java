@@ -3,8 +3,10 @@ package br.com.pedropgaraujo.screenmatch.principal;
 import br.com.pedropgaraujo.screenmatch.model.DadosSerie;
 import br.com.pedropgaraujo.screenmatch.model.DadosTemporada;
 import br.com.pedropgaraujo.screenmatch.model.Serie;
+import br.com.pedropgaraujo.screenmatch.repository.SerieRepository;
 import br.com.pedropgaraujo.screenmatch.service.ConsumoAPI;
 import br.com.pedropgaraujo.screenmatch.service.ConverteDados;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,6 +22,12 @@ public class Principal {
 
     private List<DadosSerie> dadosSeries = new ArrayList<>();
 
+    private SerieRepository repository;
+
+    public Principal(SerieRepository repository) {
+
+        this.repository = repository;
+    }
 
     public void exibeMenu() {
         var option = -1;
@@ -57,7 +65,9 @@ public class Principal {
 
     private void buscarSerieWeb() {
         DadosSerie dados = getDadosSerie();
-        dadosSeries.add(dados);
+        Serie serie = new Serie(dados);
+        //dadosSeries.add(dados);
+        repository.save(serie);
         System.out.println(dados);
     }
 
@@ -83,10 +93,7 @@ public class Principal {
 
     private  void listarSeriesBuscadas(){
 
-        List<Serie> series = new ArrayList<>();
-        series = dadosSeries.stream()
-                        .map(d -> new Serie(d))
-                                .collect(Collectors.toList());
+        List<Serie> series = repository.findAll();
         series.stream()
                 .sorted(Comparator.comparing(Serie::getGenero))
                 .forEach(System.out::println);
