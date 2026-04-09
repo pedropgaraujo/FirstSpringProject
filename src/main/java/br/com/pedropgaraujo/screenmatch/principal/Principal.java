@@ -1,9 +1,6 @@
 package br.com.pedropgaraujo.screenmatch.principal;
 
-import br.com.pedropgaraujo.screenmatch.model.DadosSerie;
-import br.com.pedropgaraujo.screenmatch.model.DadosTemporada;
-import br.com.pedropgaraujo.screenmatch.model.Episodio;
-import br.com.pedropgaraujo.screenmatch.model.Serie;
+import br.com.pedropgaraujo.screenmatch.model.*;
 import br.com.pedropgaraujo.screenmatch.repository.SerieRepository;
 import br.com.pedropgaraujo.screenmatch.service.ConsumoAPI;
 import br.com.pedropgaraujo.screenmatch.service.ConverteDados;
@@ -39,6 +36,9 @@ public class Principal {
                     2 - Buscar episódios
                     3 - Listar séries buscadas
                     4 - Buscar série por título
+                    5 - Buscar séries por ator
+                    6 - Buscar TOP 5 series
+                    7 - Buscar Serie por Categoria
                     
                     0 - Sair                                 
                     """;
@@ -59,6 +59,16 @@ public class Principal {
                     break;
                 case 4:
                     buscarSeriePorTitulo();
+                    break;
+                case 5:
+                    buscarSeriePorAutor();
+                    break;
+                case 6:
+                    buscarTop5Series();
+                    break;
+                case 7:
+                    buscarSeriePorCategoria();
+                    break;
                 case 0:
                     System.out.println("Saindo...");
                     break;
@@ -85,7 +95,6 @@ public class Principal {
     }
 
     private void buscarEpisodioPorSerie() {
-//        DadosSerie dadosSerie = getDadosSerie();
         listarSeriesBuscadas();
         System.out.println("Escolha uma série pelo nome: ");
         var serieName = scan.nextLine();
@@ -134,5 +143,31 @@ public class Principal {
         } else {
             System.out.println("Série não encontrada!");
         }
+    }
+
+    private void buscarSeriePorAutor() {
+        System.out.println("Qual o nome para busca: ");
+        var authorName = scan.nextLine();
+        System.out.println("Avaliação a partir de quanto? ");
+        var rate = scan.nextDouble();
+        List<Serie> seriesEncontradas = repository.findByAtoresContainingIgnoreCaseAndAvaliacaoGreaterThanEqual(authorName, rate);
+        System.out.println("Séries em que " + authorName + " atuou: ");
+        seriesEncontradas.forEach(s ->
+                System.out.println(s.getTitulo() + " avaliação " + s.getAvaliacao()));
+    }
+
+    private void buscarTop5Series() {
+        List<Serie> seriesTop = repository.findTop5ByOrderByAvaliacaoDesc();
+        seriesTop.forEach(s ->
+                System.out.println(s.getTitulo() + " avaliação " + s.getAvaliacao()));
+    }
+
+    private void buscarSeriePorCategoria() {
+        System.out.println("Deseja buscar séries de qual gênero?");
+        var genderName = scan.nextLine();
+        Categoria categoria = Categoria.fromPortugues(genderName);
+        List<Serie> seriesPorCategoria = repository.findByGenero(categoria);
+        System.out.println("Séries da categoria " + genderName);
+        seriesPorCategoria.forEach(System.out::println);
     }
 }
